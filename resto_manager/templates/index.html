@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+	  <!-- Main jumbotron for a primary marketing message or call to action -->
+	<div class="jumbotron">
+		<h1>Bonjour, {{user.first_name}} {{user.last_name}}!</h1>
+		
+		<p>Resto Manager est un site de gestion de restaurants.</p>
+		
+		<p>Vous pouvez commencer votre visite en utilisant une des options disponibles
+		dans le menu du haut.</p>
+		
+		<p><a id="btn_visite_guidee" class="btn btn-primary btn-lg" role="button">Visite guidée &raquo;</a></p>
+	</div>
+{% endblock %}
+
+<!--style="background-image: url('{{STATIC_URL}}images/pizza_cover.jpg'); background-position:center; background-size:  100%; "-->

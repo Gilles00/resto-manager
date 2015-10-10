@@ -1,0 +1,13 @@
+from django.conf.urls import patterns, include, url
+
+from django.contrib import admin
+admin.autodiscover()
+
+urlpatterns = patterns('',
+	url(r'^add', 'restaurateurs.views.add_restaurateur'),
+	url(r'^delete/([0-9]*)', 'restaurateurs.views.delete_restaurateur'),
+	url(r'^edit/([0-9]*)', 'restaurateurs.views.edit_restaurateur'),
+	url(r'^undo_last_delete', 'restaurateurs.views.undo_last_delete'),
+	url(r'^get/([0-9]*)', 'restaurateurs.views.get_restaurateur'),
+	url(r'', 'restaurateurs.views.show_restaurateurs'),
+)

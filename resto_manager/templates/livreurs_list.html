@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block js %}
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery_form.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/livreurs.js"></script>
+{% endblock %}
+
+{% block css %}
+	<style>
+		ul.errorlist {top: 0; left: 0;}
+	</style>
+{% endblock %}
+
+{% block page_header %}
+	Gestion des livreurs
+{% endblock %}
+
+{% block content %}
+	<div id="divNotifications">
+	
+	</div>
+	<table id="tblLivreurs" class="table table-striped">
+		<thead>
+			<tr>
+				<th>Prénom</th>
+				<th>Nom</th>
+				<th>Courriel</th>
+				<th>Téléphone</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for livreur in livreurs %}
+			<tr id="livreur_{{livreur.id}}">
+				<td>{{livreur.user.first_name}}</td>
+				<td>{{livreur.user.last_name}}</td>
+				<td>{{livreur.user.username}}</td>
+				<td>{{livreur.telephone}}</td>
+				<td>
+				<a class="edit-livreur btn btn-xs btn-primary"
+				   data-id="{{livreur.id}}"
+				   data-toggle="modal"
+				   data-target="#modalModificationLivreur">Modifier</a>
+				   
+				<a class="delete-livreur btn btn-xs btn-danger"
+				   data-id="{{livreur.id}}"
+				   data-toggle="modal"
+				   data-target="#modalSuppressionLivreur">Supprimer</a>
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	
+	<a href="#" class="btn btn-success"
+	   id="btnAjoutLivreur"
+	   data-toggle="modal"
+	   data-target="#modalAjoutLivreur">Ajouter</a>
+
+<div class="modal fade" id="modalModificationLivreur" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title" id="myModalLabel">Modification d'un livreur</h4>
+            </div>
+            <div class="modal-body" id="divEditLivreur">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                <button id="btnSaveEditLivreur" type="button" class="btn btn-success">Enregistrer</button>
+			</div>
+		</div>
+  </div>
+</div>
+	   
+	   
+<div class="modal fade" id="modalSuppressionLivreur" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title" id="myModalLabel">Suppression d'un livreur</h4>
+            </div>
+            <div class="modal-body" id="divDeleteLivreur">
+                <h3>Êtes-vous sûr de vouloir supprimer ce livreur?</h3>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Non</button>
+                <button id="btnDeleteLivreur" type="button" class="btn btn-primary">Oui</button>
+			</div>
+		</div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalAjoutLivreur" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title" id="myModalLabel">Ajout d'un livreur</h4>
+            </div>
+            <div class="modal-body" id="divAjoutLivreur">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                <button type="button" id="btnSaveLivreur" class="btn btn-success">Enregistrer</button>
+			</div>
+		</div>
+  </div>
+</div>
+{% endblock %}

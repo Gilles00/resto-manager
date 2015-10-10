@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block js %}
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$(".datepicker").datepicker($.extend({
+				changeMonth: true,
+				changeYear: true,
+				yearRange: "1900:2000",
+				defaultDate: "1900-01-01",
+				dateFormat: 'yy-mm-dd'
+			},
+			$.datepicker.regional['en']));
+		});
+	</script>
+{% endblock %}
+
+{% block page_header %}
+	Création de compte
+{% endblock %}
+
+{% block content %}
+	<h3>Entrez vos informations personnelles</h3>
+	<form method="post" action="">
+		{% csrf_token %}
+		<table>
+		{{ form.as_table }}
+		</table>
+		<br />
+		<button type="submit" class="btn btn-primary">Créer le compte</button>
+	</form>
+{% endblock %}

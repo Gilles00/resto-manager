@@ -1,0 +1,40 @@
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Date</th>
+				<th>Client</th>
+				<th>Repas</th>
+				<th>Prix total</th>
+				<th>État</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for commande in commandes %}
+			<tr>
+				<td style="vertical-align: middle">{{commande.date|date:"Y-m-d"}}</td>
+				<td style="vertical-align: middle">{{commande.client}}</td>
+				<td>
+					{% for ligne_commande in commande.ligne_commandes.all %}
+						 {{ligne_commande.quantity}} {{ligne_commande.repas.nom}} <br />
+					{% endfor %}
+				</td>
+				<td style="vertical-align: middle">
+					{{commande.prix_total}}
+				</td>
+				<td id="cellState{{commande.id}}">
+					{{commande.state}}
+				</td>
+				<td style="vertical-align: middle">
+					{% if commande.state == "Nouvelle commande" %}
+						<a data-commande_id="{{commande.id}}" id="btnPreparerCommande{{commande.id}}" class="btnPreparerCommande btn btn-xs btn-primary">Préparer</a>
+					{% endif %}
+						
+					{% if commande.state == "En préparation" %}
+						<a data-commande_id="{{commande.id}}" id="btnTerminerCommande{{commande.id}}" class="btnTerminerCommande btn btn-xs btn-success">Terminer</a>
+					{% endif %}
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>

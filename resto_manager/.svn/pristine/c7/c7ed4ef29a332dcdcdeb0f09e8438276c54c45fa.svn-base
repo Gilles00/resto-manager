@@ -1,0 +1,10 @@
+<html>
+<head>
+    <title>Notification</title>
+</head>
+<body>
+    <form action="/notifications/sendemail" method="post">{% csrf_token %}
+        <input type="submit" value="notify">
+    </form>
+</body>
+</html>

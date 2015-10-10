@@ -1,0 +1,194 @@
+﻿from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.http import HttpResponse
+from restaurants.models import Restaurant
+from commandes.models import Commande
+from forms import CreateRestaurantForm
+from forms import EditRestaurantForm
+from django.core import serializers
+import reversion
+from reversion.models import Revision
+import json
+from django.db.models import Count
+
+
+def get_restaurants_as_json(request):
+
+    result = "success"
+    restos = []
+
+    try:
+        for resto in Restaurant.objects.annotate(num_commandes=Count('commandes')).filter(num_commandes__gt=0):
+            
+            commandes = []
+            for commande in resto.commandes.all():
+                if commande.state == u"Prête":
+                    commandes.append({
+                        'id': commande.id,
+                        'prix': str(commande.prix_total),
+                        'adresse': commande.client.address.encode('utf-8')
+                    })
+				
+            if len(commandes) == 0:
+                continue;
+				
+            restos.append({
+                    'id': resto.id,
+                    'nom': resto.nom.encode('utf-8'),
+                    'adresse': resto.adresse.encode('utf-8'),
+                    'telephone': resto.telephone,
+                    'commandes': commandes
+            })
+			
+    except Exception as e:
+        result = e
+        return HttpResponse(e)
+
+    response_data = {
+        'result': result,
+        'restos': restos
+    }
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
+def get_commandes_as_json(request, id):
+
+    result = "success"
+    commandes = []
+
+    try:
+        resto = Restaurant.objects.get(pk=id)
+        for commande in resto.commandes.all():
+
+            prix = 0
+            for ligne_commande in commande.ligne_commandes:
+                prix += ligne_commande.prix
+
+            commandes.append({
+                'id': commande.id,
+                'prix': prix,
+                'adresse': commande.client.adresse
+            })
+
+    except Exception as e:
+        result = e.message
+
+    response_data = {
+        'result': result,
+        'commandes': commandes
+
+    }
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
+
+
+
+
+def show_restaurants(request):
+    if request.user.is_authenticated() and request.user.is_superuser == True:
+        restaurants = Restaurant.objects.all()
+	
+        return render(request, 'restaurants.html', {'restaurants': restaurants})
+    else:
+        return HttpResponseRedirect("/comptes/login")
+		
+@reversion.create_revision()
+def add_restaurant(request):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+
+    if request.method == "POST":
+        form = CreateRestaurantForm(request.POST)
+		
+        if form.is_valid():
+            #On ne veut pas pouvoir undo les items supprimés avant cet ajout
+            clear_deleted_restaurants(request)
+            restaurant = form.save()
+            
+            no_restaurateur = "false"
+			
+            if restaurant.restaurateur is None:
+                no_restaurateur = "true"
+			
+            return HttpResponse('{"success": true, "noRestaurateur": ' + no_restaurateur + ', "id": ' + str(restaurant.id) + '}')
+    else:
+        form = CreateRestaurantForm()
+
+    return render(request, 'table_form.html', {'form': form})
+
+@reversion.create_revision()
+def delete_restaurant(request, restaurant_id):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+
+    #On ne peut que undo le dernier restaurant supprimé, donc on vide les backups avant de supprimer
+    clear_deleted_restaurants(request)
+		
+    restaurant = Restaurant.objects.get(pk=restaurant_id)
+    restaurant.delete()
+
+    return HttpResponse("success")
+
+@reversion.create_revision()
+def edit_restaurant(request, restaurant_id):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+
+    restaurant = Restaurant.objects.get(pk=restaurant_id)
+
+    if request.method == "POST":
+        form = EditRestaurantForm(request.POST, instance=restaurant)
+        if form.is_valid():
+            #On ne veut pas pouvoir undo les items supprimés avant cette modification
+            clear_deleted_restaurants(request)
+            restaurant = form.save()
+            
+            no_restaurateur = "false"
+			
+            if restaurant.restaurateur is None:
+                no_restaurateur = "true"
+			
+            return HttpResponse('{"success": true, "noRestaurateur": ' + no_restaurateur + ', "id": ' + str(restaurant.id) + '}')
+    else:
+        form = EditRestaurantForm(instance=restaurant)
+		
+    return render(request, 'table_form.html', {'form': form})
+	
+def get_restaurant(request, restaurant_id):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+    
+    restaurant = Restaurant.objects.get(pk=restaurant_id)
+
+    return render(request, 'restaurant_row.html', {'restaurant': restaurant})
+
+def undo_last_delete(request):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+
+    delete_list = reversion.get_deleted(Restaurant)
+
+    if delete_list:
+        restaurantId = delete_list[0].object_id
+        delete_version = delete_list.latest('revision')
+        delete_version.revision.revert()
+
+        return HttpResponse('{"success": true, "id": ' + str(restaurantId) + '}')
+	
+def clear_deleted_restaurants(request):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+		
+    deleted_revisions = reversion.get_deleted(Restaurant).select_related('revision')
+    
+    for deleted_revision in deleted_revisions:
+        Revision.objects.filter(id=deleted_revision.revision_id).delete()
+
+def self_manage_restaurants(request):
+    #On permet seulement aux restaurateurs d'accéder à la page
+    if not request.user.is_authenticated() or not request.user.restaurateur:
+        return HttpResponseRedirect("/comptes/login")
+		
+    restaurants = Restaurant.objects.filter(restaurateur=request.user.restaurateur)
+    return render(request, 'self_restaurants.html', {'restaurants': restaurants})

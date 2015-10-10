@@ -1,0 +1,18 @@
+from django.db import models
+from comptes.models import Restaurateur
+import reversion
+
+# Create your models here.
+
+class Restaurant(models.Model):
+    restaurateur = models.ForeignKey('comptes.Restaurateur', related_name='restaurants', null=True)
+    nom = models.CharField(max_length=30)
+    adresse = models.CharField(max_length=100, null=True, blank=True)
+    telephone = models.CharField(max_length=30, null=True, blank=True)
+
+    def __unicode__(self):
+        return self.nom
+		
+
+#Pour le undo
+reversion.register(Restaurant)

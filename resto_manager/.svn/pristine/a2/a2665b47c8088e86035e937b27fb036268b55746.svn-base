@@ -1,0 +1,12 @@
+from django.shortcuts import render
+from restaurants.models import Restaurant
+
+# Create your views here.
+
+def passer_commande(request):
+	response = {
+		'restaurants': Restaurant.objects.all()
+	}
+	
+
+	return render(request, 'passercommande.html', response)

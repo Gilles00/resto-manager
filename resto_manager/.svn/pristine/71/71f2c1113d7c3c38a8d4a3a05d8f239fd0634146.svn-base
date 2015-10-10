@@ -1,0 +1,120 @@
+$(document).ajaxSend(function(event, xhr, settings) {
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    function sameOrigin(url) {
+        // url could be relative or scheme relative or absolute
+        var host = document.location.host; // host + port
+        var protocol = document.location.protocol;
+        var sr_origin = '//' + host;
+        var origin = protocol + sr_origin;
+        // Allow absolute or scheme relative URLs to same origin
+        return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+            (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+            // or any other URL that isn't scheme relative or absolute i.e relative.
+            !(/^(\/\/|http:|https:).*/.test(url));
+    }
+    function safeMethod(method) {
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+    }
+});
+
+$(function() {
+	var successDiv = "<div class='alert alert-success'></div>";
+	var infoDiv = "<div class='alert alert-info'></div>";
+	var errorDiv = "<div class='alert alert-danger'></div>";
+	
+	$("li.success").wrap(successDiv);
+	$("li.info").wrap(infoDiv);
+	$("li.error").wrap(errorDiv);
+	
+	$("#btn_visite_guidee").click(function() {
+		startClientTour();
+	});
+});
+
+function startClientTour() {
+	$(".popover.bottom").remove();
+
+	var steps = [];
+	
+	// Fonctionne avec tourist.js
+	if ($("#gerer_compte").length) {
+		steps.push({
+		  content: '<p>Cliquez ici pour modifier vos informations personnelles.</p>',
+		  highlightTarget: true,
+		  nextButton: true,
+		  target: $('#gerer_compte'),
+		  my: 'top center',
+		  at: 'bottom center'
+		});
+	}
+	
+	if ($("#passer_commande").length) {
+		steps.push({
+		  content: '<p>Cliquez ici pour commander à partir de menus de restaurants.</p>',
+		  highlightTarget: true,
+		  nextButton: true,
+		  target: $('#passer_commande'),
+		  my: 'top center',
+		  at: 'bottom center'
+		});
+	}
+	
+	if ($("#gerer_restaurants").length) {
+		steps.push({
+		  content: '<p>Cliquez ici pour ajouter, modifier ou supprimer des restaurants. Vous pouvez également associer des restaurants à des restaurateurs.</p>',
+		  highlightTarget: true,
+		  nextButton: true,
+		  target: $('#gerer_restaurants'),
+		  my: 'top center',
+		  at: 'bottom center'
+		});
+	}
+	
+	if ($("#gerer_restaurateurs").length) {
+		steps.push({
+		  content: '<p>Cliquez ici pour ajouter, modifier ou supprimer des restaurateurs. Vous pouvez également associer des restaurateurs à des restaurants.</p>',
+		  highlightTarget: true,
+		  nextButton: true,
+		  target: $('#gerer_restaurateurs'),
+		  my: 'top center',
+		  at: 'bottom center'
+		});
+	}
+	
+	if ($("#deconnecter").length) {
+		steps.push({
+		  content: '<p>Lorsque vous avez terminé, cliquez ici pour fermer votre session.</p>',
+		  highlightTarget: true,
+		  nextButton: true,
+		  target: $('#deconnecter'),
+		  my: 'top center',
+		  at: 'bottom center'
+		});
+	}
+
+	var tour = new Tourist.Tour({
+	  steps: steps,
+	  tipClass: 'Bootstrap',
+	  tipOptions:{ showEffect: 'slidein' }
+	});
+
+	tour.start();
+}

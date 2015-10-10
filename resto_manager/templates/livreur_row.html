@@ -1,0 +1,17 @@
+<tr id="livreur_{{livreur.id}}">
+	<td>{{livreur.user.first_name}}</td>
+	<td>{{livreur.user.last_name}}</td>
+	<td>{{livreur.user.username}}</td>
+	<td>{{livreur.telephone}}</td>
+	<td>
+		<a class="edit-livreur btn btn-xs btn-primary"
+		   data-id="{{livreur.id}}"
+		   data-toggle="modal"
+		   data-target="#modalModificationLivreur">Modifier</a>
+		   
+		<a class="delete-livreur btn btn-xs btn-danger"
+		   data-id="{{livreur.id}}"
+		   data-toggle="modal"
+		   data-target="#modalSuppressionLivreur">Supprimer</a>
+	</td>
+</tr>

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block js %}
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery_form.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/self_restaurants.js"></script>
+{% endblock %}
+
+{% block page_header %}
+	Mes restaurants
+{% endblock %}
+
+{% block content %}
+	<div id="divNotifications">
+	
+	</div>
+	<table id="tblRestaurants" class="table table-striped">
+		<thead>
+			<tr>
+				<th>Nom</th>
+				<th>Adresse</th>
+				<th>Téléphone</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for restaurant in restaurants %}
+			<tr id="restaurant_{{restaurant.id}}">
+				<td>{{restaurant.nom}}</td>
+				<td>{{restaurant.adresse}}</td>
+				<td>{{restaurant.telephone}}</td>
+				<td>
+				
+				<!-- On ne sait pas encore si on fait une page différent ou un modal -->
+				<a href="/admin/restaurants/menu/{{ restaurant.menu.id }}/"
+				   class="edit-restaurant btn btn-xs btn-primary">Menu</a>
+				  
+				<!-- On ne sait pas encore si on fait une page différent ou un modal -->
+				<a class="show_commandes btn btn-xs btn-primary"
+				   data-id="{{restaurant.id}}"
+				   data-toggle="modal"
+				   data-target="#modalCommandesRestaurant">Commandes</a>
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	
+	<div class="modal fade" id="modalCommandesRestaurant" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+					<h4 class="modal-title" id="myModalLabel">Préparation des commandes</h4>
+				</div>
+				<div class="modal-body" id="divCommandesRestaurant">
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+				</div>
+			</div>
+	  </div>
+	</div>
+{% endblock %}

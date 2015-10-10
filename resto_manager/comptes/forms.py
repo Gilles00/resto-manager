@@ -1,0 +1,186 @@
+﻿from django.contrib.auth.models import User
+from django.forms import ModelForm
+from comptes.models import UserProfile
+from django.contrib.auth.forms import UserChangeForm
+from django.contrib.auth.hashers import make_password
+from django import forms
+from django.template.defaultfilters import stringfilter
+from django.core.validators import RegexValidator
+
+
+class LoginForm(forms.Form):
+    username = forms.CharField(
+        label=("Courriel")
+    )
+
+    password = forms.CharField(
+        label=("Mot de passe"),
+        widget=forms.PasswordInput
+    )
+
+
+class UserForm(ModelForm):
+    error_messages = {
+        'duplicate_username': ("Un utilisateur avec ce nom d'utilisateur existe déjà."),
+        'password_error': ("Les mots de passe entrés ne correspondent pas."),
+    }
+
+    username = forms.EmailField(
+        label=("Courriel")
+    )
+
+    first_name = forms.CharField(
+        label=("Prénom")
+    )
+
+    last_name = forms.CharField(
+        label=("Nom")
+    )
+
+    birthdate = forms.DateField(
+        label=("Date de naissance"),
+        widget=forms.DateInput(
+            attrs={'class': 'datepicker', 'readonly': 'readonly'}
+        )
+    )
+
+    address = forms.CharField(
+        label=("Adresse")
+    )
+
+    telephone = forms.CharField(
+        label=("Téléphone"),
+        max_length=15,
+        validators=[
+            RegexValidator(
+                regex=r'^(\d){10}$',
+                message='Format invalide. Le numéro de téléphone doit avoir le format XXXXXXXXXX.',
+                code='invalid_phone'
+            ),
+        ]
+    )
+
+    password = forms.CharField(
+        label=("Mot de passe"),
+        widget=forms.PasswordInput
+    )
+
+    password2 = forms.CharField(
+        label=("Réentrez le mot de passe"),
+        widget=forms.PasswordInput
+    )
+
+    class Meta:
+        model = User
+        fields = ('username',)
+
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+
+        try:
+            User._default_manager.get(username=username)
+        except User.DoesNotExist:
+            return username
+        raise forms.ValidationError(
+            self.error_messages['duplicate_username']
+        )
+
+    def clean_password2(self):
+        password = self.cleaned_data.get("password")
+        password2 = self.cleaned_data.get("password2")
+        if password and password != password2:
+            raise forms.ValidationError(
+                self.error_messages['password_error'],
+            )
+        return password2
+
+    def save(self, commit=True):
+        user = User.objects.create_user(
+            username=self.cleaned_data["username"],
+            first_name=self.cleaned_data["first_name"],
+            last_name=self.cleaned_data["last_name"],
+            password=self.cleaned_data["password"]
+        )
+		
+        profile = UserProfile()
+        profile.telephone = self.cleaned_data["telephone"]
+        profile.address = self.cleaned_data["address"]
+        profile.birthdate = self.cleaned_data["birthdate"]
+
+        profile.full_clean()
+		
+        user.save()
+		
+        profile.user = user
+		
+        profile.save()
+
+        return user
+
+
+class EditUserForm(ModelForm):
+    error_messages = {
+        'password_error': ("Les mots de passe entrés ne correspondent pas."),
+    }
+
+    address = forms.CharField(
+        label=("Adresse"),
+        widget=forms.TextInput
+    )
+
+    telephone = forms.CharField(
+        label=("Téléphone"),
+        max_length=15,
+        validators=[
+            RegexValidator(
+                regex=r'^(\d){10}$',
+                message='Format invalide. Le numéro de téléphone doit avoir le format XXXXXXXXXX.',
+                code='invalid_phone'
+            ),
+        ]
+    )
+
+    password = forms.CharField(
+        label=("Nouveau mot de passe"),
+        widget=forms.PasswordInput,
+        required=False
+    )
+
+    password2 = forms.CharField(
+        label=("Réentrez le mot de passe"),
+        widget=forms.PasswordInput,
+        required=False
+    )
+
+    class Meta:
+        model = ''
+
+    def clean_password2(self):
+        password = self.cleaned_data.get("password")
+        password2 = self.cleaned_data.get("password2")
+        if password and password != password2:
+            raise forms.ValidationError(
+                self.error_messages['password_error'],
+            )
+        return password2
+
+    def save(self, commit=True):
+        user = self.instance
+
+        #Si l'utilisateur n'entre pas de mot de passe, il ne veut pas le changer
+        if self.cleaned_data["password"].strip():
+            user.password = make_password(self.cleaned_data["password"].strip())
+            user.save()
+
+        profile = user.get_profile()
+        profile.telephone = self.cleaned_data["telephone"]
+        profile.address = self.cleaned_data["address"]
+
+        profile.save()
+
+        return user
+
+    def __init__(self, *args, **kwargs):
+        super(EditUserForm, self).__init__(*args, **kwargs)
+        self.fields['telephone'].initial = self.instance.get_profile().telephone
+        self.fields['address'].initial = self.instance.get_profile().address

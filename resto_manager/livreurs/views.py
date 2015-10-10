@@ -1,0 +1,143 @@
+# -*- coding: utf-8 -*-
+
+from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.http import HttpResponse
+from django.contrib.auth.models import User
+from livreurs.models import Livreur
+from forms import CreateLivreurForm
+from forms import EditLivreurForm
+from forms import SelfEditLivreurForm
+from django.core import serializers
+from django.contrib import messages
+from commandes.models import Commande
+
+import reversion
+from reversion.models import Revision
+
+def show_livreurs(request):
+    if request.user.is_authenticated() and request.user.is_superuser == True:
+        livreurs = Livreur.objects.all()
+	
+        return render(request, 'livreurs_list.html', {'livreurs': livreurs})
+    else:
+        return HttpResponseRedirect("/comptes/login")
+
+@reversion.create_revision()
+def add_livreur(request):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+		
+    if request.method == "POST":
+        form = CreateLivreurForm(request.POST)
+        if form.is_valid():
+            #On ne veut pas pouvoir undo les items supprimés avant cet ajout
+            clear_deleted_livreurs(request)
+            livreur = form.save()
+			
+            return HttpResponse('{"success": true, "id": ' + str(livreur.id) + '}')
+    else:
+        form = CreateLivreurForm()
+
+    return render(request, 'create_livreur.html', {'form': form})
+
+@reversion.create_revision()
+def delete_livreur(request, livreur_id):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+
+    #On ne peut que undo le dernier livreur supprimé, donc on vide les backups avant de supprimer
+    clear_deleted_livreurs(request)
+		
+    livreur = Livreur.objects.get(pk=livreur_id)
+
+    livreur.delete()
+
+    return HttpResponse("success")
+
+@reversion.create_revision()
+def edit_livreur(request, livreur_id):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+
+    livreur = Livreur.objects.get(pk=livreur_id)
+	
+    if request.method == "POST":
+        form = EditLivreurForm(request.POST, instance=livreur)
+        if form.is_valid():
+            #On ne veut pas pouvoir undo les items supprimés avant cette modification
+            clear_deleted_livreurs(request)
+            livreur = form.save()
+			
+            return HttpResponse('{"success": true, "id": ' + str(livreur.id) + '}')
+    else:
+        form = EditLivreurForm(instance=livreur)
+
+    return render(request, 'edit_livreur.html', {'form': form})
+
+def get_livreur(request, livreur_id):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+    
+    livreur = Livreur.objects.get(pk=livreur_id)
+
+    return render(request, 'livreur_row.html', {'livreur': livreur})
+
+def undo_last_delete(request):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+
+    delete_list = reversion.get_deleted(Livreur)
+
+    if delete_list:
+        livreurId = delete_list[0].object_id
+        delete_version = delete_list.latest('revision')
+        delete_version.revision.revert()
+
+        return HttpResponse('{"success": true, "id": ' + str(livreurId) + '}')
+
+def clear_deleted_livreurs(request):
+    if not request.user.is_authenticated() or not request.user.is_superuser:
+        return HttpResponseRedirect("/comptes/login")
+		
+    deleted_revisions = reversion.get_deleted(Livreur).select_related('revision')
+    
+    for deleted_revision in deleted_revisions:
+        Revision.objects.filter(id=deleted_revision.revision_id).delete()
+
+#Fonction appelée lorsqu'un livreur veut modifier ses propres informations
+def self_edit_livreur(request):
+    #On permet seulement aux livreurs d'accéder à la page
+    if not request.user.is_authenticated() or not request.user.livreur:
+        return HttpResponseRedirect("/comptes/login")
+
+    if request.method == "POST":
+        form = SelfEditLivreurForm(request.POST, instance=request.user.livreur)
+        if form.is_valid():
+            form.save()
+
+            first_name = form.cleaned_data.get("first_name")
+            last_name = form.cleaned_data.get("last_name")
+            telephone = form.cleaned_data.get("telephone")
+
+            message_connection = """Vos informations ont été sauvegardées.
+									Voici les informations saisies:"""
+
+            messages.success(request, message_connection)
+
+            messages.info(request, u"Prénom: " + first_name)
+            messages.info(request, "Nom: " + last_name)
+            messages.info(request, u"Numéro de téléphone: " + telephone)
+
+            return HttpResponseRedirect('/livreurs/manage')
+    else:
+        form = SelfEditLivreurForm(instance=request.user.livreur)
+
+    return render(request, 'self_edit_livreur.html', {'form': form })
+
+def mes_commandes(request):
+    response = {
+        'commandes': Commande.objects.filter(livreur=request.user.livreur).order_by('-date_livraison')
+    }
+    
+    return render(request, 'livreur_mes_commandes.html', response)

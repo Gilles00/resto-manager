@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% load apptags %}
+
+{% block js %}
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery_form.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/restaurants.js"></script>
+{% endblock %}
+
+{% block page_header %}
+	État des commandes
+{% endblock %}
+
+{% block content %}
+	<table id="tblCommandes" class="table table-striped">
+		<thead>
+			<tr>
+				<th>Date de livraison</th>
+				<th>Restaurant</th>
+				<th>Adresse de livraison</th>
+				<th>Repas</th>
+				<th>Prix total</th>
+				<th>État</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for commande in commandes %}
+			<tr id="restaurateur_{{restaurateur.id}}">
+				<td style="vertical-align: middle">{{commande.date_livraison|date:"Y-m-d"}} {{commande.heure_livraison|date:"H:i"}}</td>
+				<td style="vertical-align: middle">{{commande.restaurant}}</td>
+				<td style="vertical-align: middle">{{commande.adresse}}</td>
+				<td>
+					{% for ligne_commande in commande.ligne_commandes.all %}
+						 {{ligne_commande.quantity}} {{ligne_commande.repas.nom}} <br />
+					{% endfor %}
+				</td>
+				<td style="vertical-align: middle">
+					{{commande.prix_total}}
+				</td>
+				<td style="vertical-align: middle">{{commande.state}}</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

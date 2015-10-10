@@ -1,0 +1,11 @@
+from django.shortcuts import render
+from django.core.mail import EmailMessage
+
+def notify(request):
+    return render(request, 'notification.html')
+
+def send_email(request):
+    email = EmailMessage('Hello', 'World', to=['etsrestomanager@gmail.com'])
+    email.send()
+
+    return render(request, 'index.html')

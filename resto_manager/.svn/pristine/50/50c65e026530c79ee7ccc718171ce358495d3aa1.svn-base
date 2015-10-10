@@ -1,0 +1,156 @@
+﻿from django.contrib.auth.models import User
+from django.forms import ModelForm
+from restaurants.models import Restaurant
+from comptes.models import Restaurateur
+from django import forms
+from django.template.defaultfilters import stringfilter
+from django.core.validators import RegexValidator
+from django.core.mail import send_mail
+
+class CreateRestaurateurForm(forms.Form):
+    error_messages = {
+		'duplicate_username': ("Un utilisateur avec ce nom d'utilisateur existe déjà."),
+    }
+
+    first_name = forms.CharField(
+        label=("Prénom")
+    )
+
+    last_name = forms.CharField(
+        label=("Nom")
+    )
+	
+    username = forms.EmailField(
+        label=("Courriel")
+    )
+
+    telephone = forms.CharField(
+        label=("Téléphone"),
+        max_length=15,
+        validators=[
+            RegexValidator(
+                regex=r'^([0-9]|\-)+$',
+                message = 'Format invalide. Le numéro de téléphone ne doit contenir que des chiffres et des tirets (-).',
+                code='invalid_phone'
+            ),
+            ]
+    )
+
+    restaurant = forms.ModelChoiceField(
+        label=("Restaurant"),
+        queryset=Restaurant.objects.filter(restaurateur=None),
+		required=False
+    )
+
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+
+        try:
+            User._default_manager.get(username=username)
+        except User.DoesNotExist:
+            return username
+        raise forms.ValidationError(
+            self.error_messages['duplicate_username']
+        )
+
+    def save(self, commit=True):
+        temp_password = User.objects.make_random_password()
+        email = self.cleaned_data["username"]
+	
+        user_data = User(
+            username = email,
+            first_name = self.cleaned_data["first_name"],
+            last_name = self.cleaned_data["last_name"]
+        )
+		
+        user_data.set_password(temp_password)
+		
+        restaurateur = Restaurateur()
+        restaurateur.telephone = self.cleaned_data["telephone"]
+        #Avant de sauvegarder le user, on veut s'assurer que le profile du restaurateur est correct
+        restaurateur.full_clean()
+		
+        user_data.save()
+        restaurateur.user = user_data
+        restaurateur.save()
+		
+        #Peut-être afficher une erreur si le restaurant est déjà associé?
+        if (self.cleaned_data["restaurant"] is not None):
+            restaurateur.restaurants.add(self.cleaned_data["restaurant"])
+		
+        self.send_confirmation_email(email, temp_password)
+
+        return restaurateur
+		
+    def send_confirmation_email(self, email, password):
+        title = "Confirmation d'inscription"
+		
+        content = """Bienvenue sur Resto Manager!
+		
+        Voici les informations que vous devez utiliser pour vous connecter:
+        Courriel: {0}
+        Mot de passe: {1}""".format(email, password)
+		
+        from_email = "resto.manager2@gmail.com"
+        to_emails = ['vignola.patrice@gmail.com']
+		
+        send_mail(title, content, from_email, to_emails, fail_silently=False)
+
+class EditRestaurateurForm(ModelForm):
+    first_name = forms.CharField(
+        label=("Prénom"),
+        widget=forms.TextInput
+    )
+	
+    last_name = forms.CharField(
+        label=("Prénom"),
+        widget=forms.TextInput
+    )
+
+    telephone = forms.CharField(
+        label=("Téléphone"),
+        max_length=15,
+        validators=[
+            RegexValidator(
+                regex=r'^([0-9]|\-)+$',
+                message = 'Format invalide. Le numéro de téléphone ne doit contenir que des chiffres et des tirets (-).',
+                code='invalid_phone'
+            ),
+            ]
+    )
+
+    restaurant = forms.ModelChoiceField(
+        label=("Restaurant"),
+        queryset=Restaurant.objects.all(),
+		required=False
+    )
+	
+    class Meta:
+        model = ''
+		
+    def save(self, commit=True):
+        restaurateur = self.instance
+        user_data = restaurateur.user
+
+        user_data.first_name = self.cleaned_data["first_name"]
+        user_data.last_name = self.cleaned_data["last_name"]
+        restaurateur.telephone = self.cleaned_data["telephone"]
+        restaurateur.restaurants.clear()
+		
+        if (self.cleaned_data["restaurant"] is not None):
+            restaurateur.restaurants.add(self.cleaned_data["restaurant"])
+		
+        #Avant de sauvegarder le user, on veut s'assurer que le profile du restaurateur est correct
+        restaurateur.full_clean()
+		
+        user_data.save()
+        restaurateur.save()
+
+        return restaurateur
+
+    def __init__(self, *args, **kwargs):
+        super(EditRestaurateurForm, self).__init__(*args,**kwargs)
+        self.fields['first_name'].initial = self.instance.user.first_name
+        self.fields['last_name'].initial = self.instance.user.last_name
+        self.fields['telephone'].initial = self.instance.telephone
+        self.fields['restaurant'].initial = self.instance.restaurants.first()

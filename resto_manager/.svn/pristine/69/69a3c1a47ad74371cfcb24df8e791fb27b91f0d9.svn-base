@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block js %}
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery_form.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/restaurateurs.js"></script>
+{% endblock %}
+
+{% block page_header %}
+	Gestion des restaurateurs
+{% endblock %}
+
+{% block content %}
+	<div id="divNotifications">
+	
+	</div>
+	<table id="tblRestaurateurs" class="table table-striped">
+		<thead>
+			<tr>
+				<th>Prénom</th>
+				<th>Nom</th>
+				<th>Courriel</th>
+				<th>Téléphone</th>
+				<th>Restaurant</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for restaurateur in restaurateurs %}
+			<tr id="restaurateur_{{restaurateur.id}}">
+				<td>{{restaurateur.user.first_name}}</td>
+				<td>{{restaurateur.user.last_name}}</td>
+				<td>{{restaurateur.user.username}}</td>
+				<td>{{restaurateur.telephone}}</td>
+				<td>
+					{% for restaurant in restaurateur.restaurants.all %}
+						{{restaurant}} <br />
+					{% endfor %}
+				</td>
+				<td>
+				<a class="edit-restaurateur btn btn-xs btn-primary"
+				   data-id="{{restaurateur.id}}"
+				   data-toggle="modal"
+				   data-target="#modalModificationRestaurateur">Modifier</a>
+				   
+				<a class="delete-restaurateur btn btn-xs btn-danger"
+				   data-id="{{restaurateur.id}}"
+				   data-toggle="modal"
+				   data-target="#modalSuppressionRestaurateur">Supprimer</a>
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	
+	<a href="#" class="btn btn-success"
+	   id="btnAjoutRestaurateur"
+	   data-toggle="modal"
+	   data-target="#modalAjoutRestaurateur">Ajouter</a>
+
+<div class="modal fade" id="modalModificationRestaurateur" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title" id="myModalLabel">Modification d'un restaurateur</h4>
+            </div>
+            <div class="modal-body" id="divEditRestaurateur">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                <button id="btnSaveEditRestaurateur" type="button" class="btn btn-success">Enregistrer</button>
+			</div>
+		</div>
+  </div>
+</div>
+	   
+	   
+<div class="modal fade" id="modalSuppressionRestaurateur" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title" id="myModalLabel">Suppression d'un restaurateur</h4>
+            </div>
+            <div class="modal-body" id="divDeleteRestaurateur">
+                <h3>Êtes-vous sûr de vouloir supprimer ce restaurateur?</h3>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Non</button>
+                <button id="btnDeleteRestaurateur" type="button" class="btn btn-primary">Oui</button>
+			</div>
+		</div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalAjoutRestaurateur" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title" id="myModalLabel">Ajout d'un restaurateur</h4>
+            </div>
+            <div class="modal-body" id="divAjoutRestaurateur">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                <button type="button" id="btnSaveRestaurateur" class="btn btn-success">Enregistrer</button>
+			</div>
+		</div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block js %}
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery_form.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/commandes.js"></script>
+{% endblock %}
+
+{% block page_header %}
+	Passer une commande
+{% endblock %}
+
+{% block content %}
+	<h2>Choisissez les repas que vous voulez commander</h2>
+	
+	<div id="accordion">
+		{% for restaurant in restaurants %}
+		  <div class="group">
+			<h3>{{ restaurant.nom }} <br />{{ restaurant.adresse}}<br />{{restaurant.telephone}}</h3>
+			<div>
+			  {% if not restaurant.menu.repas.all %}
+				  <strong>Il n'y a actuellement pas de menu pour ce restaurant.</strong>
+			  {% else %}
+				  <form id="commande-form-{{restaurant.id}}" target="">
+					  <h4>{{restaurant.menu.nom}}</h4>
+					  {% for repas in restaurant.menu.repas.all %}
+						<div>
+							<input onkeydown="return isNumber(event)" name="{{repas.id}}" value="0" style="width: 30px; margin-right:5px;" />
+							{{repas.nom}}
+						</div>
+					  {% endfor %}
+				  </form>
+				  
+				  <button type="button" data-id="{{restaurant.id}}" style="color: white;margin-top: 10px;" class="btn btn-primary add-to-commande">Ajouter à la commande</submit>
+			  {% endif %}
+			
+			</div>
+		  </div>
+		{% endfor %}
+	</div>
+{% endblock %}

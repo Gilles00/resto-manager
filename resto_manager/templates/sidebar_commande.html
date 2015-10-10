@@ -1,0 +1,28 @@
+{% load apptags %}
+
+<form id="sidebar-form-restaurant-{{restaurant.id}}" target="">
+	<h5 class="list-group-item heading" style="background-color: lightgray;">{{restaurant.nom}}</h5>
+	{% for repas in repas_list %}
+		<div>
+		{% with repas_id=repas.id|int_to_string restaurant_id=restaurant.id|int_to_string %}
+			{% with qty=request.session.restaurants|get_item:restaurant_id|get_item:repas_id %}
+				<input onkeydown="return isNumber(event)" data-price="{{repas.prix}}" data-id="{{repas.id}}" data-restaurant="{{restaurant_id}}" class="repas_qty" name="{{repas_id}}" value="{{qty}}" style="width: 30px; margin-right:5px;">
+				{{repas.nom}}
+				
+				($<label id="price_{{repas.id}}">{% multiply qty repas.prix %}</label>)
+			{% endwith %}
+		{% endwith %}
+		</div>
+	{% endfor %}
+	
+	<br />
+	
+	<strong>Total: <label id="lblTotal_{{restaurant.id}}">${{total}}</label></strong> <br />
+	
+	<br />
+</form>
+
+<a data-restaurant="{{restaurant.id}}" class="btn btn-success btn-confirm-commande"
+								data-toggle="modal"
+								data-target="#modalConfirmerCommande">Commander</a>
+

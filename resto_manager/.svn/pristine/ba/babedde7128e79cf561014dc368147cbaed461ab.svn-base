@@ -1,0 +1,17 @@
+$(function() {
+    $( "#accordion" )
+      .accordion({
+        header: "> div > h3",
+		collapsible: true
+      });
+	  
+	  $('#accordion').hide();
+	  
+	  $('#accordion h3').first().click();
+	  
+	  window.setTimeout(showAccordion,400);
+  });
+  
+ function showAccordion() {
+	$('#accordion').show();
+ }

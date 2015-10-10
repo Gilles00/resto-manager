@@ -1,0 +1,22 @@
+
+<h3>Vous êtes sur le point d'effectuer la commande suivante:</h3> <br />
+<form id="commandeFormConfirm" method="post" action="">
+	<h4>{{nom_restaurant}}</h4>
+	{% for repas in repas_list %}
+		{{repas.qty}} {{repas.nom}} (${{repas.sous_total}})
+		<input type="hidden" name="{{repas.id}}" value="{{repas.qty}}" /> <br />
+	{% endfor %}
+	
+	<br />
+	<label>Total: ${{prix_total}}</label>
+	<h3>Adresse de livraison:</h3>
+	
+	<input checked="checked" type="radio" name="address" value="defaultAddress"> {{request.user.user_profile.address}}<br>
+	<input type="radio" name="address" value="newAddress"> <input type="text" name="newAddress" />
+	
+	<h3>Date de livraison:</h3>
+	<input type="text" name="date" readonly="readonly" class="datepicker" value="2014-08-01" /> <br />
+	<input type="text" name="time" readonly="readonly" class="timepicker" value="12:00" />
+</form>
+<br />
+<h3>Voulez-vous continuer?</h3>

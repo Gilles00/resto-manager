@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block page_header %}
+	Connection au compte
+{% endblock %}
+
+{% block content %}
+	<h3>Entrez vos identifiants</h3>
+	<form method="post" action="">
+		{% csrf_token %}
+		<table>
+		{{ form.as_table }}
+		</table>
+		<br />
+		<button type="submit" class="btn btn-primary">Se connecter</button>
+	</form>
+	
+	<br />
+	
+	<a href='/comptes/create_user'>Pas encore de compte? Créez-en un!</a>
+{% endblock %}

@@ -1,0 +1,14 @@
+from django.conf.urls import patterns, include, url
+from django.contrib import admin
+admin.autodiscover()
+
+urlpatterns = patterns('',
+    url(r'^admin/', include(admin.site.urls)),
+	url(r'^comptes/', include('comptes.urls')),
+	url(r'^notifications/', include('notifications.urls')),
+	url(r'^restaurateurs/', include('restaurateurs.urls')),
+	url(r'^directions/', include('directions.urls')),
+    url(r'^restaurants/', include('restaurants.urls')),
+    url(r'^commandes/', include('commandes.urls')),
+    url(r'', 'comptes.views.index'),
+)

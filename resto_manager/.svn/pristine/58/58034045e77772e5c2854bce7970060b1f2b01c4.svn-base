@@ -1,0 +1,15 @@
+from django.conf.urls import patterns, include, url
+
+from django.contrib import admin
+admin.autodiscover()
+
+urlpatterns = patterns('',
+	url(r'^manage', 'livreurs.views.self_edit_livreur'),
+	url(r'^add', 'livreurs.views.add_livreur'),
+	url(r'^mes_commandes', 'livreurs.views.mes_commandes'),
+	url(r'^delete/([0-9]*)', 'livreurs.views.delete_livreur'),
+	url(r'^edit/([0-9]*)', 'livreurs.views.edit_livreur'),
+	url(r'^undo_last_delete', 'livreurs.views.undo_last_delete'),
+	url(r'^get/([0-9]*)', 'livreurs.views.get_livreur'),
+	url(r'', 'livreurs.views.show_livreurs'),
+)

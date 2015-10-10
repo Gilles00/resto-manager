@@ -1,0 +1,178 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+from django.shortcuts import render
+from restaurants.models import Restaurant, Menu, Repas
+from commandes.models import Commande, LigneCommande
+from django.http import HttpResponse
+from decimal import Decimal
+from datetime import datetime
+
+def passer_commande(request):
+    response = {
+        'restaurants': Restaurant.objects.all()
+    }
+    
+    return render(request, 'passercommande.html', response)
+    
+def add_repas_to_commande(request, restaurant_id):
+    for repas in request.POST:
+        previous_value = 0
+        
+        if "restaurants" not in request.session:
+            request.session["restaurants"] = {}
+
+        if "noms_restaurants" not in request.session:
+            request.session["noms_restaurants"] = {}
+            
+        try:
+            previous_value = int(request.session["restaurants"][restaurant_id][str(repas)])
+            print str(previous_value)
+        except:
+            previous_value = 0
+        
+        new_value = previous_value + int(request.POST[str(repas)])
+        
+        if new_value == 0:
+            continue
+        
+        try:
+            request.session["restaurants"][restaurant_id][repas] = new_value
+        except:
+            request.session["restaurants"][restaurant_id] = {}
+            request.session["restaurants"][restaurant_id][repas] = new_value
+
+    return HttpResponse('{"success": true, "restaurantId": ' + str(restaurant_id) + '}')
+    
+def get_session_commande(request, restaurant_id):
+    try:
+        response = request.session["restaurants"][restaurant_id]
+    except:
+        return HttpResponse("")
+        
+    total = 0
+    
+    repas_list = []
+
+    restaurant = None
+    
+    for session_repas in response:
+        repas_id = session_repas
+        repas = Repas.objects.get(id = repas_id)
+        
+        restaurant = repas.menu.restaurant
+        repas_list.append(repas)
+        total += repas.prix * response[session_repas]
+    
+    if restaurant:
+        if restaurant.id not in request.session["noms_restaurants"]:
+            request.session["noms_restaurants"][restaurant.id] = restaurant.nom
+        
+        return render(request, 'sidebar_commande.html',
+            {
+                'restaurant': restaurant,
+                'repas_list': repas_list,
+                'total': total
+            }
+        )
+    else:
+        return render(request, 'sidebar_commande.html')
+
+def get_confirm_commande_message(request, restaurant_id):
+    repas_list = []
+
+    prix_total = 0
+
+    for form_repas in request.POST:
+        repas_object = Repas.objects.get(id = form_repas)
+        
+        repas = {}
+        repas["id"] = form_repas
+        nom_restaurant = repas_object.menu.restaurant.nom
+        repas["qty"] = request.POST[str(form_repas)]
+        repas["nom"] = repas_object.nom
+        repas["sous_total"] = Decimal(repas["qty"]) * repas_object.prix
+        
+        repas_list.append(repas)
+
+        prix_total += repas["sous_total"]
+
+    return render(request, 'confirm_commande.html', {'repas_list': repas_list, 'prix_total': prix_total, 'nom_restaurant': nom_restaurant})
+        
+def confirm_commande(request, restaurant_id):
+    user = request.user
+
+    commande = Commande()
+    commande.client = user.user_profile
+    commande.restaurant_id = restaurant_id
+    commande.state = "Nouvelle commande"
+    commande.prix_total = 0
+    
+    commande.save()
+    
+    for form_repas in request.POST:
+        repas_id = form_repas
+        repas = Repas.objects.get(id = repas_id)
+
+        repas_qty = request.POST[str(form_repas)]
+        
+        ligne_commande = LigneCommande()
+        ligne_commande.commande = commande
+        ligne_commande.repas = repas
+        ligne_commande.prix = repas.prix
+        ligne_commande.quantity = repas_qty
+        commande.prix_total = commande.prix_total + repas.prix * Decimal(repas_qty)
+        
+        ligne_commande.save()
+
+    commande.save()
+        
+    del request.session["restaurants"][restaurant_id]
+        
+    return HttpResponse('{"success": true, "restaurantId": ' + str(restaurant_id) + '}')
+
+def mes_commandes(request):
+    response = {
+        'commandes': Commande.objects.filter(client=request.user.user_profile).order_by('-date')
+    }
+    
+    return render(request, 'mes_commandes.html', response)
+    
+def get_commandes_by_restaurant(request, restaurant_id):
+    commandes = Commande.objects.filter(restaurant_id = restaurant_id)
+    
+    return render(request, 'commandes_by_restaurant.html', {'commandes': commandes})
+
+def preparer_commande(request, commande_id):
+    commande = Commande.objects.get(pk=commande_id)
+    commande.state = "En préparation"
+    commande.save()
+
+    return HttpResponse("success")
+    
+def terminer_commande(request, commande_id):
+    commande = Commande.objects.get(pk=commande_id)
+    commande.state = "Prête"
+    commande.save()
+
+    return HttpResponse("success")
+
+def choisir_commande(request, commande_id):
+    message = 'success'
+    try:
+        commande = Commande.objects.get(pk=commande_id)
+        if commande.state == "Prête":
+            commande.livreur = request.user.livreur
+            commande.state = "En livraison"
+            commande.date_acceptee = datetime.now()
+        elif commande.state == "En livraison":
+            message = "Cette commande est déja en cours de livraison"
+        else:
+            message = "Cette commande n'est pas prête à être livrée"
+    except:
+        message = 'failure'
+    return HttpResponse(message)
+
+
+
+

@@ -1,0 +1,17 @@
+<tr id="restaurant_{{restaurant.id}}">
+	<td>{{restaurant.nom}}</td>
+	<td>{{restaurant.adresse}}</td>
+	<td>{{restaurant.telephone}}</td>
+	<td>{{restaurant.restaurateur}}</td>
+	<td>
+	<a class="edit-restaurant btn btn-xs btn-primary"
+	   data-id="{{restaurant.id}}"
+	   data-toggle="modal"
+	   data-target="#modalModificationRestaurant">Modifier</a>
+	   
+	<a class="delete-restaurant btn btn-xs btn-danger"
+	   data-id="{{restaurant.id}}"
+	   data-toggle="modal"
+	   data-target="#modalSuppressionRestaurant">Supprimer</a>
+	</td>
+</tr>

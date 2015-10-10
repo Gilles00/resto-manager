@@ -1,0 +1,33 @@
+.messages, .errorlist {
+	list-style-type:none;
+	padding-left:0;
+}
+
+ul.errorlist {
+	left: 200px;
+	top: 25px;
+	position: relative;
+	margin: 5px 0 0 0;
+	color: red;
+	font-weight: bold;
+}
+
+th {
+	vertical-align: bottom;
+}
+
+td { 
+    padding: 5px;
+}
+
+.popover {
+	z-index: 1040;
+}
+
+#btn_visite_guidee:hover {
+	cursor: pointer;
+}
+
+a:hover {
+	cursor: pointer;
+}

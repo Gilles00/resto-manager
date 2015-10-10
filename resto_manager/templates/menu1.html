@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h2>Test</h2>
+	
+	{% for restaurant in restaurants %}
+	<p>Voici le menu pizza</p>
+	<br />
+    <img src="pizza.jpg" alt="Photo d'une pizza" />
+	{% endfor %}
+		
+{% endblock %}

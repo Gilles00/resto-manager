@@ -1,0 +1,22 @@
+<tr id="restaurateur_{{restaurateur.id}}">
+	<td>{{restaurateur.user.first_name}}</td>
+	<td>{{restaurateur.user.last_name}}</td>
+	<td>{{restaurateur.user.username}}</td>
+	<td>{{restaurateur.telephone}}</td>
+	<td>
+		{% for restaurant in restaurateur.restaurants.all %}
+			{{restaurant}} <br />
+		{% endfor %}
+	</td>
+	<td>
+	<a class="edit-restaurateur btn btn-xs btn-primary"
+	   data-id="{{restaurateur.id}}"
+	   data-toggle="modal"
+	   data-target="#modalModificationRestaurateur">Modifier</a>
+	   
+	<a class="delete-restaurateur btn btn-xs btn-danger"
+	   data-id="{{restaurateur.id}}"
+	   data-toggle="modal"
+	   data-target="#modalSuppressionRestaurateur">Supprimer</a>
+	</td>
+</tr>

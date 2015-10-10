@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h2>Voici la liste des restaurants</h2>
+	
+	{% for restaurant in restaurants %}
+		<p>{{ restaurant.nom }}<br />
+		{{ restaurant.adresse}}<br />
+		{{restaurant.telephone}}<br />
+		<a href="">Choisir ce restaurant</a> </p>
+		<br />
+	{% endfor %}
+		
+{% endblock %}

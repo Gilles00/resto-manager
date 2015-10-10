@@ -1,0 +1,34 @@
+<form method="post" action="">
+	<table>
+		<tbody>
+			{% for field in form %}
+				<tr>
+					<th>
+						{{field.label_tag}}
+					</th>
+					<td>
+						 {{field}}
+					</td>
+					<td>
+						{{field.errors}}
+					</td>
+				</tr>
+			{% endfor %}
+			<tr>
+				<th style="vertical-align: top;">
+					<label style="margin-top: 5px;">Restaurants :</label>
+				</th>
+				<td>
+					<div style="margin-bottom: 5px;" id="divCurrentRestaurants">
+					</div>
+					<select id="ddlNewRestaurant">
+						{% for restaurant in availables %}
+							<option id="newRestaurant{{restaurant.id}}" value="{{restaurant.id}}">{{restaurant.nom}}</option>
+						{% endfor %}
+					</select>
+					<a id="btnAddRestaurant" class="btn btn-xs btn-success">+</a>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</form>

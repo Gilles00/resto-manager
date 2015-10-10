@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% load apptags %}
+
+{% block js %}
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery_form.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/livreurs.js"></script>
+{% endblock %}
+
+{% block page_header %}
+	État des commandes
+{% endblock %}
+
+{% block content %}
+	<table id="tblCommandes" class="table table-striped">
+		<thead>
+			<tr>
+				<th>Date de livraison</th>
+				<th>Numéro</th>
+				<th>Restaurant</th>
+				<th>Adresse de livraison</th>
+				<th>Prix total</th>
+				<th>État</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for commande in commandes %}
+			<tr id="restaurateur_{{restaurateur.id}}">
+				<td style="vertical-align: middle">{{commande.date_livraison|date:"Y-m-d"}} {{commande.heure_livraison|date:"H:i"}}</td>
+				<td><center>{{commande.id}}</center></td>
+				<td style="vertical-align: middle">{{commande.restaurant}}</td>
+				<td style="vertical-align: middle">{{commande.adresse}}</td>
+				<td style="vertical-align: middle">
+					{{commande.prix_total}}
+				</td>
+				<td id="cellState{{commande.id}}" style="vertical-align: middle">
+					{% if commande.state == "Acceptée" %}
+						<a data-commandeId="{{commande.id}}" id="btnLivrerCommande{{commande.id}}" class="btnLivrerCommande btn btn-xs btn-primary">A été livré</a>
+					{% else %}
+						Livré
+					{% endif %}
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block js %}
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery_form.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/restaurants.js"></script>
+{% endblock %}
+
+{% block page_header %}
+	Gestion des restaurants
+{% endblock %}
+
+{% block content %}
+	<div id="divNotifications">
+	
+	</div>
+	<table id="tblRestaurants" class="table table-striped">
+		<thead>
+			<tr>
+				<th>Nom</th>
+				<th>Adresse</th>
+				<th>Téléphone</th>
+				<th>Restaurateur</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for restaurant in restaurants %}
+			<tr id="restaurant_{{restaurant.id}}">
+				<td>{{restaurant.nom}}</td>
+				<td>{{restaurant.adresse}}</td>
+				<td>{{restaurant.telephone}}</td>
+				<td>{{restaurant.restaurateur}}</td>
+				<td>
+				<a class="edit-restaurant btn btn-xs btn-primary"
+				   data-id="{{restaurant.id}}"
+				   data-toggle="modal"
+				   data-target="#modalModificationRestaurant">Modifier</a>
+				   
+				<a class="delete-restaurant btn btn-xs btn-danger"
+				   data-id="{{restaurant.id}}"
+				   data-toggle="modal"
+				   data-target="#modalSuppressionRestaurant">Supprimer</a>
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	
+	<a href="#" class="btn btn-success"
+	   id="btnAjoutRestaurant"
+	   data-toggle="modal"
+	   data-target="#modalAjoutRestaurant">Ajouter</a>
+
+<div class="modal fade" id="modalModificationRestaurant" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title" id="myModalLabel">Modification d'un restaurant</h4>
+            </div>
+            <div class="modal-body" id="divEditRestaurant">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                <button id="btnSaveEditRestaurant" type="button" class="btn btn-success">Enregistrer</button>
+			</div>
+		</div>
+  </div>
+</div>
+	   
+	   
+<div class="modal fade" id="modalSuppressionRestaurant" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title" id="myModalLabel">Suppression d'un restaurant</h4>
+            </div>
+            <div class="modal-body" id="divDeleteRestaurant">
+                <h3>Êtes-vous sûr de vouloir supprimer ce restaurant?</h3>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Non</button>
+                <button id="btnDeleteRestaurant" type="button" class="btn btn-primary">Oui</button>
+			</div>
+		</div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalAjoutRestaurant" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title" id="myModalLabel">Ajout d'un restaurant</h4>
+            </div>
+            <div class="modal-body" id="divAjoutRestaurant">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                <button type="button" id="btnSaveRestaurant" class="btn btn-success">Enregistrer</button>
+			</div>
+		</div>
+  </div>
+</div>
+{% endblock %}
