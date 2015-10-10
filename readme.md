@@ -1,6 +1,5 @@
-Django app
+#Goal
+This Django app can be used to assign food deliveries to independant deliverers.
 
-Goal :
-Assign food deliveries to independant deliverers.
-
-Log210 - teamwork
+#Motivation
+This project was a teamwork for school.
